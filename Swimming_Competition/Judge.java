@@ -7,10 +7,8 @@ public class Judge extends Person{
 
     public void blow() {
         System.out.println("Judge " + this.getName() + " blew the whistle!");
-        synchronized (lock) {
             isBlew = true;
             lock.notify();
-        }
     }
 
     public boolean isBlew() {

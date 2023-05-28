@@ -25,11 +25,9 @@ public class ScoreBoard {
     }
 
     public void display() {
-        synchronized (touchPads) {
             System.out.println("Name\t\tRank");
             for (TouchPad t: touchPads) {
                 System.out.println(t.getSwimmer().getName() + "\t\t" + t.getTime());
-            }
         }
     }
 }

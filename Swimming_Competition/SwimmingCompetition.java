@@ -7,6 +7,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class SwimmingCompetition {
+    private static Object lock1 = new Object();
+    private static Object lock2 = new Object();
     public static void main(String[] arg) throws InterruptedException {
         Scanner scanner = new Scanner(System.in);
 
@@ -18,9 +20,10 @@ public class SwimmingCompetition {
         List<Swimmer> swimmers = new ArrayList<>(noOfSwimmers);
         for (int i = 0; i < noOfSwimmers; i++) {
             System.out.print("ID: "); int id = scanner.nextInt();
+            scanner.nextLine();
             System.out.print("Name: "); String name = scanner.nextLine();
             System.out.print("Gender: "); String gender = scanner.nextLine();
-            System.out.print("Lane Number: "); int lane = scanner.nextInt();
+            System.out.print("Lane Number: "); int lane = scanner.nextInt();scanner.nextLine();
             if (gender.equalsIgnoreCase("M") || gender.equalsIgnoreCase("MALE")) {
                 swimmers.add(new Swimmer(id, name, Swimmer.Gender.MALE, lane));
             }
@@ -37,8 +40,8 @@ public class SwimmingCompetition {
         System.out.print("No of Judges: ");
         int noOfJudges = scanner.nextInt();
         List<Judge> judges = new ArrayList<>(noOfJudges);
-        for (int i = 0; i < noOfSwimmers; i++) {
-            System.out.print("ID: "); int id = scanner.nextInt();
+        for (int i = 0; i < noOfJudges; i++) {
+            System.out.print("ID: "); int id = scanner.nextInt(); scanner.nextLine();
             System.out.print("Name: "); String name = scanner.nextLine();
             judges.add(new Judge(id, name));
         }
@@ -46,10 +49,10 @@ public class SwimmingCompetition {
         System.out.print("No of Spectators: ");
         int noOfSpectators = scanner.nextInt();
         List<Spectator> spectators = new ArrayList<>(noOfSpectators);
-        for (int i = 0; i < noOfSwimmers; i++) {
-            System.out.print("ID: "); int id = scanner.nextInt();
+        for (int i = 0; i < noOfSpectators; i++) {
+            System.out.print("ID: "); int id = scanner.nextInt(); scanner.nextLine();
             System.out.print("Name: "); String name = scanner.nextLine();
-            judges.add(new Judge(id, name));
+            spectators.add(new Spectator(id, name));
         }
 
         System.out.println("No of Lanes: ");
@@ -87,10 +90,19 @@ public class SwimmingCompetition {
             Runnable swimmer = new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        swimmingPool.getSwimmers().get(finalI).swim(Math.random() / 30, swimmingPool);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                    synchronized (lock1) {
+                        while (!swimmingPool.getActiveJudge().isBlew()) {
+                            try {
+                                lock1.wait();
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                            try {
+                                swimmingPool.getSwimmers().get(finalI).swim(Math.random() / 30, swimmingPool);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
                     }
                 }
             };
@@ -98,9 +110,17 @@ public class SwimmingCompetition {
             executorService.execute(swimmer);
         }
 
-        judges.get((int) (Math.random() / noOfJudges)).blow();
+        Thread judge = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (lock2) {
+                    lock2.notify();
+                    judges.get((int) (Math.random() / noOfJudges)).blow();
+                }
 
-        Thread.sleep(5000);
+            }
+        });
+
         scoreBoard.display();
     }
 }

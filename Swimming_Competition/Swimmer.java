@@ -1,5 +1,6 @@
 public class Swimmer extends Person{
     private String colour;
+    private Object lock = new Object();
     public static enum Gender{
         MALE, FEMALE
     }
@@ -21,12 +22,9 @@ public class Swimmer extends Person{
     }
 
     public void swim(double speed, SwimmingPool swimmingPool) throws InterruptedException {
-        if (swimmingPool.getActiveJudge().isBlew()) {
-            Thread.sleep((int) speed * swimmingPool.getLenght());
-            swimmingPool.setTouchPad(lane, (int) speed * swimmingPool.getLenght(), this);
-        }
-        else {
-            wait();
-        }
+        System.out.println(this.getName() + " is swimming.");
+        Thread.sleep((int) speed * swimmingPool.getLenght());
+        System.out.println(this.getName() + " touched the touchPad");
+        swimmingPool.setTouchPad(lane, (int) speed * swimmingPool.getLenght(), this);
     }
 }
