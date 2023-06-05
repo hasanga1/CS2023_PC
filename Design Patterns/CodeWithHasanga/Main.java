@@ -1,16 +1,15 @@
 package CodeWithHasanga;
 
-import Decorator.CameraRawFilter;
-import Decorator.OilPaint;
-import Decorator.SmartFilter;
-import Decorator.SmartObject;
-import Facad.NotificationCenter;
+import Builder.URL;
+import Builder.URLBuilder;
 
 public class Main {
     public static void main(String[] arg) {
-        NotificationCenter notificationCenter = new NotificationCenter("36475869987");
-        notificationCenter.sendMessage("Hello World", "5854363");
+        URLBuilder urlBuilder = new URLBuilder("https://", "mywebsite");
+        urlBuilder.setPathParam("/companies");
+        urlBuilder.setQueryParam("?companyName=xyz");
+
+        URL url = new URL(urlBuilder);
+        url.print();
     }
-
-
 }
